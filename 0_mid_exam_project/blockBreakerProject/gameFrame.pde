@@ -1,4 +1,32 @@
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.IntStream;
+
+enum RotationState {
+  RS_IDLE,
+  RS_RIGHT,
+  RS_LEFT,
+}
+
+RotationState matchState(int keyEventCode) {
+  switch(keyEventCode) {
+    case LEFT:
+      return RotationState.RS_LEFT;
+    case RIGHT:
+      return RotationState.RS_RIGHT;
+    default:
+      return RotationState.RS_IDLE;
+  }
+}
+
+RotationState fixState(RotationState before, int currentkeyEventCode) {
+  if (before != RotationState.RS_IDLE && Arrays.stream(LEFTRIGHT).anyMatch(item -> item == currentkeyEventCode)) {
+    return matchState(currentkeyEventCode);
+  } else if (before == RotationState.RS_IDLE) {
+    return matchState(currentkeyEventCode);
+  }
+  return before;
+}
 
 class GameFrame {
   PVector size;
@@ -8,6 +36,7 @@ class GameFrame {
   Collider[] cols = new Collider[4];
   MessageReceiver ownReceiver;
   MessageSender ballMessageSender;
+  RotationState lastState = RotationState.RS_IDLE;
   
   GameFrame(PVector size, MessageReceiver ownReceiver, MessageSender ballMessageSender) {
     this.size = size;
@@ -16,11 +45,11 @@ class GameFrame {
     coord.setCenter(initCenter);
     initRect = relativeRect(size);
     for (int i = 0; i < cols.length; i++) {
-      println(new PVector(initRect[i].x, initRect[i].y));
+      //println(new PVector(initRect[i].x, initRect[i].y));
       if ((initRect[i].x < 0 && initRect[i].y < 0) || (initRect[i].x > 0 && initRect[i].y > 0)) {
-        cols[i] = new Collider(new PVector(initRect[i].x * 2, 5), ColliderType.CL_RECT, coord, new PVector(0, initRect[i].y));
+        cols[i] = new Collider(new PVector((initRect[i].x * 2) + 3, 10), ColliderType.CL_RECT, coord, new PVector(0, initRect[i].y));
       } else { 
-        cols[i] = new Collider(new PVector(5, initRect[i].y * 2), ColliderType.CL_RECT, coord, new PVector(initRect[i].x, 0));
+        cols[i] = new Collider(new PVector(10, (initRect[i].y * 2) + 3), ColliderType.CL_RECT, coord, new PVector(initRect[i].x, 0));
       }
     }
     this.ownReceiver = ownReceiver;
@@ -44,7 +73,10 @@ class GameFrame {
   }
   
   void onKeyPressed() {
-    coord.setVelocity(min(coord.getVelocity() + 1, 10));
+    this.lastState = fixState(lastState, keyCode);
+    if (matchState(keyCode) != RotationState.RS_IDLE) {
+      coord.setVelocity(min(coord.getVelocity() + 1, 2));
+    }
   }
   
   void onKeyReleased() {
@@ -53,13 +85,21 @@ class GameFrame {
   
   void onUpdate() {
     pollMessage();
-    if (isPressed(RIGHT)) {
-      coord.increaseRotation();
-    }
-    if (isPressed(LEFT)) {
-      coord.decreaseRotation();
-    }
+    doRotation();
     Arrays.stream(cols).forEach(col -> col.update());
+  }
+  
+  void doRotation() {
+    switch (this.lastState) {
+      case RS_RIGHT:
+        coord.increaseRotation();
+        break;
+      case RS_LEFT:
+        coord.decreaseRotation();
+        break;
+      default:
+        break;
+    }
   }
   
   void pollMessage() {
@@ -73,6 +113,9 @@ class GameFrame {
     if (msg instanceof CurrentColliderInfoMessage) {
       CurrentColliderInfoMessage cast = (CurrentColliderInfoMessage) msg;
       onColliderMessage(cast);
+    }  else if (msg instanceof RestartGameMessage) {
+      RestartGameMessage cast = (RestartGameMessage) msg;
+      onRestartMessage(cast);
     } else {
       print("Message not supported: " + msg);
     }
@@ -80,11 +123,17 @@ class GameFrame {
   }
   
   void onColliderMessage(CurrentColliderInfoMessage msg) {
-    Arrays.stream(cols).forEach(col -> {
-      if (col.isCollided(msg.collider)) {
-        ballMessageSender.send(new CollisionDetectedMessage(true));
+    IntStream.range(0, cols.length).forEach(i -> {
+      if (cols[i].isCollided(msg.collider)) {
+        cols[i].reflectVector(msg.collider).ifPresent(c -> ballMessageSender.send(new CollisionDetectedMessage(Reflecter.RF_FRAME, c)));
       }
     });
+  }
+  
+  void onRestartMessage(RestartGameMessage msg) {
+    println("[Frame] Do restart");
+    coord.rotation = 0;
+    this.lastState = RotationState.RS_IDLE;
   }
   
   void onDebug() {

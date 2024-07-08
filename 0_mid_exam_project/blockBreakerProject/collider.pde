@@ -1,3 +1,10 @@
+import java.util.Optional;
+
+enum Reflecter {
+  RF_FRAME,
+  RF_BLOCK,
+}
+
 enum ColliderType {
   CL_RECT,
   CL_ELLIPSE,
@@ -8,21 +15,24 @@ class Collider {
   Coord anchor;
   ColliderType colType;
   PVector[] lastP2S;
+  boolean debug = false;
     
   Collider(PVector size, ColliderType colType, Coord anchor) {
     rect = relativeRect(size);
     this.colType = colType;
     this.anchor = anchor;
+    this.lastP2S = pointsToScreen(rect);
   }
   
   Collider(PVector size, ColliderType colType, Coord anchor, PVector distance) {
     rect = relativeRectWithDistance(size, distance);
     this.colType = colType;
     this.anchor = anchor;
+    this.lastP2S = pointsToScreen(rect);
   }
   
   void debug() {
-
+    debug = true;
   }
   
   void update() {
@@ -31,13 +41,49 @@ class Collider {
       rotate(radians(anchor.rotation));
       lastP2S = pointsToScreen(rect);
       
-      fill(color(255, 204, 0));
-      strokeWeight(1);
-      beginShape();
-        Arrays.stream(rect).forEach(pt -> vertex(pt.x, pt.y));
-      endShape(CLOSE);
-      noFill();
+      if (debug) {
+        fill(color(255, 204, 0));
+        strokeWeight(1);
+        beginShape();
+          Arrays.stream(rect).forEach(pt -> vertex(pt.x, pt.y));
+        endShape(CLOSE);
+        noFill();
+      }
     popMatrix();
+  }
+  
+  PVector reflect(PVector velocity, PVector normal) {
+    float dotProduct = velocity.dot(normal);
+    //return PVector.sub(velocity, PVector.mult(normal, 2 * dotProduct));
+    return new PVector(
+      min(max(velocity.x - 2 * dotProduct * normal.x, -1), 1),
+      min(max(velocity.y - 2 * dotProduct * normal.y, -1), 1)
+    );
+  }
+  
+  boolean isCollidedWithLine(PVector p, PVector a, PVector b, float size) {
+    PVector ab = PVector.sub(b, a);
+    PVector ap = PVector.sub(p, a);
+    float ab_ap = ab.dot(ap);
+    float ab_ab = ab.dot(ab);
+    float t = ab_ap / ab_ab;
+    if (t < 0.0 || t > 1.0) return false;
+    PVector closest = PVector.add(a, PVector.mult(ab, t));
+    float distance = PVector.dist(p, closest);
+    return distance < size;
+  }
+  
+  Optional<PVector> reflectVector(Collider other) {
+    Optional<PVector> result = Optional.empty();
+    for (int i = 0; i < lastP2S.length; i++) {
+      PVector a = lastP2S[i];
+      PVector b = lastP2S[(i + 1) % lastP2S.length];
+      if (isCollidedWithLine(other.anchor.center, a, b, (abs(other.rect[0].x) + abs(other.rect[1].x)))) {
+        PVector normal = PVector.sub(b, a).rotate(HALF_PI).normalize();
+        result = Optional.ofNullable(reflect(other.anchor.direction, normal));
+      }
+    }
+    return result;
   }
   
   boolean isCollided(Collider other) {

@@ -7,6 +7,7 @@ enum Actor {
   AC_BALL,
   AC_BLOCK,
   AC_FRAME,
+  AC_SYSTEM,
 }
 
 interface Message {
@@ -17,23 +18,30 @@ class PingMessage implements Message {
 
 class CurrentColliderInfoMessage implements Message {
   Collider collider;
-  //PVector currentScreenCenter;
-  //PVector[] currentScreenRect;
-  //float currentRotate;
-  
+
   CurrentColliderInfoMessage(Collider col) {
     collider = col;
   }
 }
 
 class CollisionDetectedMessage implements Message {
-  boolean detected;
-  //angle
+  Reflecter reflector;
+  PVector reflectVector;
   
-  CollisionDetectedMessage(boolean d) {
-    detected = d;
+  CollisionDetectedMessage(Reflecter reflector, PVector reflectVector) {
+    this.reflector = reflector;
+    this.reflectVector = reflectVector;
   }
 }
+
+class RetryGameMessage implements Message {
+}
+
+class GameOverMessage implements Message { }
+
+class RestartGameMessage implements Message {}
+
+class GameClearMessage implements Message {}
 
 class MessageBox {
   Queue<Message> messageBox = new LinkedList<>();

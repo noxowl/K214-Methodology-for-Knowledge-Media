@@ -39,15 +39,12 @@ class Sprite {
     strokeWeight(1);
     switch (fallback) {
       case FB_CIRCLE:
+        rectMode(CENTER);
         ellipse(cx, cy, size.x, size.y);
         break;
       case FB_SQUARE:
         rect(cx, cy, size.x, size.y);
         break;
     }
-  }
-  
-  void move(PVector newVec) {
-    
   }
 }

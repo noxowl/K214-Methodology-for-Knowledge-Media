@@ -36,12 +36,17 @@ PVector[] pointsToScreen(PVector[] points) {
 
 class Coord {
   PVector center;
+  float defaultVelocity;
   float velocity;
   int rotation;
+  PVector direction;
+  int boost;
   
   Coord(float velo) {
     center = new PVector(0, 0);
+    direction = new PVector(0, 0);
     velocity = velo;
+    defaultVelocity = velo;
   }
   
   float getPosX() {
@@ -57,7 +62,11 @@ class Coord {
   }
   
   void setCenter(PVector newCenter) {
-    this.center = newCenter;
+    this.center = new PVector(newCenter.x, newCenter.y);
+  }
+  
+  void setDirection(PVector newDirection) {
+    this.direction = new PVector(newDirection.x, newDirection.y);
   }
   
   void increaseRotation() {
@@ -72,9 +81,18 @@ class Coord {
     this.velocity = newV;
   }
   
-  void moveToward(PVector vec) {
-    this.center.x += vec.x * this.velocity;
-    this.center.y += vec.y * this.velocity;
+  void setBoosted(int boost) {
+    this.boost = boost;
+  }
+  
+  void moveToward() {
+    if (boost > 0) {
+      this.velocity = this.defaultVelocity;
+      this.velocity *= min(boost, 3);
+      this.boost --;
+    }
+    this.center.x += this.direction.x * this.velocity;
+    this.center.y += this.direction.y * this.velocity;
   }
   
   void moveRelative(PVector moveRel) {
