@@ -1,5 +1,5 @@
 # K214 Midterm - Block breaker game project
-## 回るプロック崩し
+## 回るブロック崩し
 ![game over screen of the block breaker game](img/sample_1.png)
 
 This game reflects the ball by controlling the rotation of the game frame instead of controlling the bar like in typical block breaker games. This makes it impossible for players to predict the angle of reflection, allowing them to pursue new fun through uncertainty.
