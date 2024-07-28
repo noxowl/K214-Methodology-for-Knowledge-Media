@@ -7,6 +7,7 @@ GameFrame gameFrame;
 BlockManager blockManager;
 Ball ball;
 Pitcher pitcher;
+HTB_Serial serial;
 
 SoundFile countdownReadySound;
 SoundFile countdownGoSound;
@@ -19,6 +20,7 @@ void setup() {
   windowResize(round(displayHeight / 1.5), round(displayHeight / 1.1));
   noCursor();
   frameRate(60);
+  serial = new HTB_Serial("/dev/cu.wchusbserial110", 9600);
   messageCenter = new MessageCenter();
   var systemChannel = messageCenter.generateChannel(Actor.AC_SYSTEM);
   var blockChannel = messageCenter.generateChannel(Actor.AC_BLOCK);
@@ -58,10 +60,11 @@ void setup() {
 
 void draw() {
   background(255, 255, 255);
+  serialRead();
   render();
   //debug();
   update();
-  delay(1);
+  // delay(1);
 }
 
 void keyPressed() {
@@ -72,6 +75,15 @@ void keyPressed() {
 void keyReleased() {
   gameSystem.onKeyReleased();
   pitcher.onKeyReleased();
+}
+
+void serialRead() {
+  if (serial.isAvailable) {
+    int data = serial.read();
+    if (data != -1) {
+      pitcher.onSerialRead(data);
+    }
+  }
 }
 
 void render() {

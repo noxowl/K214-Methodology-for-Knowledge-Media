@@ -16,7 +16,7 @@ class Pitcher {
   Map<Actor, MessageSender> senderMap;
   boolean pitching = false;
   boolean batted = false;
-  HTB_Serial serial;
+
   PVector pitchingBallInitPos = new PVector(0, 0);
   int pitchingBallInitDistance = 30;
   int pitchingBallDistance = 0;
@@ -33,7 +33,6 @@ class Pitcher {
     pitcherBoxCollider = new Collider(pitcherInitSize, ColliderType.CL_RECT, pitcherBoxCoord);
     pitcherBoxCoord.setCenter(new PVector(pitcherInitPos.x, pitcherInitPos.y));
     this.pitcherInitPos = new PVector(pitcherInitPos.x, pitcherInitPos.y);
-    serial = new HTB_Serial("/dev/cu.wchusbserial110", 9600);
     this.pitchingBallInitPos = new PVector(pitcherInitPos.x, pitcherInitPos.y + 150);
     this.pitchingBallDistance = 100;
     this.pitchingStartTiming = this.pitchingStartInitTiming;
@@ -127,6 +126,15 @@ class Pitcher {
     }
   }
 
+  void onSerialRead(int data) {
+    if (pitching && pitchingStartTiming <= 0) {
+      println("sensor data: " + data);
+      if (data < 30) {
+        batted = true;
+      }
+    }
+  }
+
   void togglePitching() {
     this.pitching = !this.pitching;
   }
@@ -146,10 +154,6 @@ class Pitcher {
       // println("pitching ball distance: " + pitchingBallDistance);
       if (batted) {
         onBatting();
-      } else {
-        if (serial.isAvailable) {
-
-        }
       }
       if (pitchingBallDistance > 0) {
         pitchingBallDistance--;
