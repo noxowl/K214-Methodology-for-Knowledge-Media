@@ -1,0 +1,2 @@
+class HTB_Sound {
+}
