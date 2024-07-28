@@ -3,7 +3,7 @@ void setup() {
 }
 
 void loop() {
-  Serial.write(intToUnit8(voltageToDistance(analogueToVoltage(readAnalogue(0)))));
+  Serial.write(intToUint8(voltageToDistance(analogueToVoltage(readAnalogue(0)))));
   delay(50);
 }
 
@@ -30,6 +30,6 @@ int voltageToDistance(int source) {
   return map(source, 4, 220, 50, 4);
 }
 
-uint8_t intToUnit8(int source) {
+uint8_t intToUint8(int source) {
   return source;
 }
