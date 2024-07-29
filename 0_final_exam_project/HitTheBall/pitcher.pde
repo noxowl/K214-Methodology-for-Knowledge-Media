@@ -200,7 +200,7 @@ class Pitcher {
     println("good batting");
     float x = random(-1, 1);
     float y = random(-0.7, -0.5);
-    onHit(new PVector(x, -0.7), 5);
+    onHit(new PVector(x, y), 5);
   }
 
   void onJustBatting() {

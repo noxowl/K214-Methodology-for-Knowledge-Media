@@ -48,7 +48,7 @@ void setup() {
   ball = new Ball(
     ballChannel.receiver,
     Map.of(Actor.AC_BLOCK, blockChannel.sender, Actor.AC_SYSTEM, systemChannel.sender, Actor.AC_FRAME, frameChannel.sender, Actor.AC_PITCHER, pitcherChannel.sender));
-  ball.setInitPosition(new PVector(gameFrame.initCenter.x, gameFrame.initCenter.y + 20));
+  ball.setInitPosition(new PVector(gameFrame.initCenter.x, gameFrame.initCenter.y - 40));
   ball.initPosition();
   
   countdownReadySound = new SoundFile(this, "countdown-ready.wav");
