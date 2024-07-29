@@ -10,7 +10,11 @@ class HTB_Serial extends PApplet {
         this.portName = portName;
         this.baudRate = baudRate;
 
-        try {
+        tryConnect();
+    }
+    
+    void tryConnect() {
+      try {
             port = new Serial(this, this.portName, this.baudRate);
             if (port.available() > 0) {
                 println("Serial port is available: " + this.portName);
@@ -23,6 +27,14 @@ class HTB_Serial extends PApplet {
             onSerialNotAvailable();
             isAvailable = false;
         }
+    }
+    
+    void onUpdate() {
+      if (!isAvailable) {
+        tryConnect();
+        
+      } else {
+      }
     }
 
     void onSerialNotAvailable() {

@@ -165,9 +165,9 @@ class GameSystem {
         fill(0, 0, 0);
         textSize(64);
         textAlign(CENTER);
-        text("GAME CLEAR", width / 2, height / 2);
-        textSize(24);
-        text("Press 'ENTER' to Restart", width / 2, (height / 2) + 150);
+        text("GAME CLEAR", width / 2, height / 1.5);
+        textSize(32);
+        text("Press 'ENTER' to Restart", width / 2, (height / 1.5) + 80);
         noFill();
       popMatrix();
     }

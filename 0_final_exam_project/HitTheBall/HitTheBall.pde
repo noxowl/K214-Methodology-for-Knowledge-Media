@@ -8,6 +8,7 @@ BlockManager blockManager;
 Ball ball;
 Pitcher pitcher;
 HTB_Serial serial;
+boolean previousSerialState = false;
 
 SoundFile countdownReadySound;
 SoundFile countdownGoSound;
@@ -95,6 +96,7 @@ void render() {
 }
 
 void update() {
+  serial.onUpdate();
   gameSystem.onUpdate();
   if (!GAMEOVER) {
     gameFrame.onUpdate();
@@ -102,6 +104,14 @@ void update() {
     blockManager.onUpdate();
     ball.onUpdate();
   }
+  if (previousSerialState != serial.isAvailable) {
+    if (serial.isAvailable) {
+      gameSystem.onSerialConnected();
+    } else {
+      gameSystem.onSerialDisconnected();
+    }
+  }
+  previousSerialState = serial.isAvailable;
 }
 
 void debug() {
