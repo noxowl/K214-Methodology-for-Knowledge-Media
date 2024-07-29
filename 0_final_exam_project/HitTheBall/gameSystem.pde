@@ -3,12 +3,14 @@ import java.util.Map;
 class GameSystem {
   int life;
   int initLife;
+  boolean serial;
   MessageReceiver ownReceiver;
   Map<Actor, MessageSender> senderMap;
   
   GameSystem(MessageReceiver ownReceiver, Map<Actor, MessageSender> senderMap) {
     initLife = LIFE;
     life = initLife;
+    serial = false;
     this.ownReceiver = ownReceiver;
     this.senderMap = senderMap;
   }
@@ -110,11 +112,32 @@ class GameSystem {
   
   void onKeyReleased() {
   }
+
+  void onSerialConnected() {
+    this.serial = true;
+  }
+
+  void onSerialDisconnected() {
+    this.serial = false;
+  }
   
   void renderMenuBar() {
-    var iconWidth = 30;
+    var iconWidth = 20;
     pushMatrix();
       rect(width / 2, 15, width, 30, 0, 0, 48, 48);
+      if (serial) {
+        fill(0, 255, 0);
+        circle(0 + (iconWidth), 15, 10);
+      } else {
+        fill(255, 0, 0);
+        circle(0 + (iconWidth), 15, 10);
+      }
+      noFill();
+      fill(0);
+      textSize(16);
+      textAlign(CENTER);
+      text("Balls : ", width / 2 - (iconWidth * 4), 20);
+      noFill();
       IntStream.range(0, initLife).forEachOrdered(i -> {
         if (i > life - 1) {
           fill(153);
@@ -128,7 +151,7 @@ class GameSystem {
   void renderOverlay() {
     if (GAMEOVER && !GAMECLEAR) {
       pushMatrix();
-        fill(0, 408, 612);
+        fill(0, 0, 0);
         textSize(64);
         textAlign(CENTER);
         text("GAME OVER", width / 2, height / 1.5);
@@ -139,7 +162,7 @@ class GameSystem {
     } else if (GAMECLEAR) {
       GAMEOVER = true;
       pushMatrix();
-        fill(0, 408, 612);
+        fill(0, 0, 0);
         textSize(64);
         textAlign(CENTER);
         text("GAME CLEAR", width / 2, height / 2);
