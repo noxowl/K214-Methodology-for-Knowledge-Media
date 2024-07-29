@@ -8,8 +8,8 @@ void loop() {
 }
 
 int readAnalogue(int pin) {
-  int scan = 0;
-  int scanRate = 30;
+  long scan = 0;
+  long scanRate = 30;
   int scanTried = scanRate;
   while (scanTried > 0) {
     scan = scan + analogRead(pin);
